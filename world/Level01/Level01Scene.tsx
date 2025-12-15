@@ -3,15 +3,14 @@
 import { useEffect, useMemo } from 'react';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/game/store/useGameStore';
-import { Platform } from './interactables/Platform';
 import { Hazard } from './interactables/Hazard';
 import { ExitGate } from './interactables/ExitGate';
 import { SignalShard } from './collectibles/SignalShard';
 import { COLORS } from '../shared/constants';
 
 interface LevelData {
-  platforms: Array<{ position: [number, number, number]; size: [number, number, number]; rotation?: number }>;
-  walls: Array<{ position: [number, number, number]; size: [number, number, number]; rotation?: number }>;
+  floorSegments: Array<{ position: [number, number, number]; size: [number, number, number] }>;
+  walls: Array<{ position: [number, number, number]; size: [number, number, number] }>;
   hazards: Array<{ position: [number, number, number]; size: [number, number, number] }>;
   shards: Array<{ position: [number, number, number]; id: string }>;
   exitGate: { position: [number, number, number] };
@@ -19,152 +18,101 @@ interface LevelData {
   courseLength: number;
 }
 
-function generateHorizontalCourse(): LevelData {
-  const platforms: LevelData['platforms'] = [];
+function generateCourse(): LevelData {
+  const floorSegments: LevelData['floorSegments'] = [];
   const walls: LevelData['walls'] = [];
   const hazards: LevelData['hazards'] = [];
   const shards: LevelData['shards'] = [];
 
-  // Course parameters
-  const segmentLength = 12;
-  const pathWidth = 6;
-  const wallHeight = 1.5;
-  const wallThickness = 0.3;
+  const pathWidth = 8;
+  const wallHeight = 1.2;
+  const wallThickness = 0.5;
 
-  // Create a winding path with gentle curves
-  // Segment 1: Straight start
-  platforms.push({
-    position: [0, 0, 0],
-    size: [pathWidth, 0.5, segmentLength],
+  // ONE CONTINUOUS FLOOR - simple rectangle for now
+  // Main floor: 8 wide x 80 long
+  floorSegments.push({
+    position: [0, -0.25, -35],
+    size: [pathWidth, 0.5, 80],
   });
-  // Left wall
+
+  // Left wall (full length)
   walls.push({
-    position: [-pathWidth / 2 - wallThickness / 2, wallHeight / 2, 0],
-    size: [wallThickness, wallHeight, segmentLength],
+    position: [-pathWidth/2 - wallThickness/2, wallHeight/2, -35],
+    size: [wallThickness, wallHeight, 80],
   });
-  // Right wall
+
+  // Right wall (full length)
   walls.push({
-    position: [pathWidth / 2 + wallThickness / 2, wallHeight / 2, 0],
-    size: [wallThickness, wallHeight, segmentLength],
+    position: [pathWidth/2 + wallThickness/2, wallHeight/2, -35],
+    size: [wallThickness, wallHeight, 80],
   });
 
-  // Shards in first segment
-  shards.push({ position: [0, 1, -2], id: 'shard-1' });
-  shards.push({ position: [-1.5, 1, -4], id: 'shard-2' });
-  shards.push({ position: [1.5, 1, -4], id: 'shard-3' });
-
-  // Segment 2: Curve right
-  const curve1Z = -segmentLength;
-  platforms.push({
-    position: [pathWidth / 2, 0, curve1Z - segmentLength / 2],
-    size: [pathWidth * 1.5, 0.5, segmentLength],
-    rotation: Math.PI / 6,
-  });
-  // Outer wall
+  // Back wall (at start)
   walls.push({
-    position: [-pathWidth / 2, wallHeight / 2, curve1Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength * 1.2],
-    rotation: Math.PI / 6,
+    position: [0, wallHeight/2, 6],
+    size: [pathWidth + wallThickness*2, wallHeight, wallThickness],
   });
 
-  // Hazard in curve
+  // === SHARDS along the path ===
+  // Start area
+  shards.push({ position: [0, 0.8, 2], id: 'shard-1' });
+
+  // Early section
+  shards.push({ position: [-2, 0.8, -5], id: 'shard-2' });
+  shards.push({ position: [2, 0.8, -5], id: 'shard-3' });
+  shards.push({ position: [0, 0.8, -10], id: 'shard-4' });
+
+  // Mid section
+  shards.push({ position: [-2.5, 0.8, -20], id: 'shard-5' });
+  shards.push({ position: [2.5, 0.8, -20], id: 'shard-6' });
+  shards.push({ position: [0, 0.8, -25], id: 'shard-7' });
+  shards.push({ position: [-2, 0.8, -30], id: 'shard-8' });
+  shards.push({ position: [2, 0.8, -30], id: 'shard-9' });
+
+  // Late section
+  shards.push({ position: [0, 0.8, -40], id: 'shard-10' });
+  shards.push({ position: [-2.5, 0.8, -50], id: 'shard-11' });
+  shards.push({ position: [2.5, 0.8, -50], id: 'shard-12' });
+
+  // Near goal
+  shards.push({ position: [-1.5, 0.8, -60], id: 'shard-13' });
+  shards.push({ position: [1.5, 0.8, -60], id: 'shard-14' });
+  shards.push({ position: [0, 0.8, -65], id: 'shard-15' });
+
+  // === HAZARDS (obstacles to avoid) ===
   hazards.push({
-    position: [2, 0.5, curve1Z - 4],
-    size: [1.5, 0.3, 1.5],
+    position: [0, 0.3, -15],
+    size: [2, 0.4, 2],
   });
 
-  // Shards along curve
-  shards.push({ position: [1, 1, curve1Z - 2], id: 'shard-4' });
-  shards.push({ position: [3, 1, curve1Z - 6], id: 'shard-5' });
-
-  // Segment 3: Wide section with obstacles
-  const seg3Z = curve1Z - segmentLength - 2;
-  platforms.push({
-    position: [4, 0, seg3Z - segmentLength / 2],
-    size: [pathWidth * 1.5, 0.5, segmentLength],
-  });
-  // Walls
-  walls.push({
-    position: [4 - pathWidth * 0.75 - wallThickness / 2, wallHeight / 2, seg3Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength],
-  });
-  walls.push({
-    position: [4 + pathWidth * 0.75 + wallThickness / 2, wallHeight / 2, seg3Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength],
-  });
-
-  // Center obstacle
   hazards.push({
-    position: [4, 0.5, seg3Z - segmentLength / 2],
-    size: [2, 0.3, 2],
+    position: [-2, 0.3, -35],
+    size: [1.5, 0.4, 1.5],
   });
 
-  // Shards around obstacle
-  shards.push({ position: [2, 1, seg3Z - 4], id: 'shard-6' });
-  shards.push({ position: [6, 1, seg3Z - 4], id: 'shard-7' });
-  shards.push({ position: [2, 1, seg3Z - 8], id: 'shard-8' });
-  shards.push({ position: [6, 1, seg3Z - 8], id: 'shard-9' });
-
-  // Segment 4: Curve left
-  const seg4Z = seg3Z - segmentLength - 2;
-  platforms.push({
-    position: [2, 0, seg4Z - segmentLength / 2],
-    size: [pathWidth * 1.5, 0.5, segmentLength],
-    rotation: -Math.PI / 6,
-  });
-  // Walls
-  walls.push({
-    position: [6, wallHeight / 2, seg4Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength * 1.2],
-    rotation: -Math.PI / 6,
+  hazards.push({
+    position: [2, 0.3, -45],
+    size: [1.5, 0.4, 1.5],
   });
 
-  // Shards
-  shards.push({ position: [3, 1, seg4Z - 3], id: 'shard-10' });
-  shards.push({ position: [1, 1, seg4Z - 6], id: 'shard-11' });
-
-  // Segment 5: Final straight to gate
-  const seg5Z = seg4Z - segmentLength - 2;
-  platforms.push({
-    position: [0, 0, seg5Z - segmentLength / 2],
-    size: [pathWidth, 0.5, segmentLength],
+  hazards.push({
+    position: [0, 0.3, -55],
+    size: [2.5, 0.4, 2],
   });
-  // Walls
-  walls.push({
-    position: [-pathWidth / 2 - wallThickness / 2, wallHeight / 2, seg5Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength],
-  });
-  walls.push({
-    position: [pathWidth / 2 + wallThickness / 2, wallHeight / 2, seg5Z - segmentLength / 2],
-    size: [wallThickness, wallHeight, segmentLength],
-  });
-
-  // Final shards leading to gate
-  shards.push({ position: [-1.5, 1, seg5Z - 2], id: 'shard-12' });
-  shards.push({ position: [1.5, 1, seg5Z - 2], id: 'shard-13' });
-  shards.push({ position: [0, 1, seg5Z - 5], id: 'shard-14' });
-  shards.push({ position: [0, 1, seg5Z - 8], id: 'shard-15' });
 
   // Exit gate at the end
-  const gateZ = seg5Z - segmentLength + 1;
   const exitGate = {
-    position: [0, 1.5, gateZ] as [number, number, number],
+    position: [0, 1.5, -72] as [number, number, number],
   };
 
-  // End platform (wider for the gate)
-  platforms.push({
-    position: [0, 0, gateZ],
-    size: [pathWidth * 1.2, 0.5, 4],
-  });
-
   return {
-    platforms,
+    floorSegments,
     walls,
     hazards,
     shards,
     exitGate,
-    spawnPoint: [0, 1, 4], // Start at beginning of course
-    courseLength: Math.abs(gateZ - 4),
+    spawnPoint: [0, 1, 3],
+    courseLength: 75,
   };
 }
 
@@ -173,7 +121,7 @@ interface Level01SceneProps {
 }
 
 export function Level01Scene({ seed = 'default' }: Level01SceneProps) {
-  const levelData = useMemo(() => generateHorizontalCourse(), []);
+  const levelData = useMemo(() => generateCourse(), []);
 
   const setTotalShards = useGameStore((s) => s.setTotalShards);
   const setSpawnPoint = useGameStore((s) => s.setSpawnPoint);
@@ -193,38 +141,42 @@ export function Level01Scene({ seed = 'default' }: Level01SceneProps) {
 
   return (
     <group>
-      {/* Ground plane for visual reference */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, -30]} receiveShadow>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial color="#0a0a15" />
+      {/* Dark ground plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, -35]} receiveShadow>
+        <planeGeometry args={[200, 200]} />
+        <meshStandardMaterial color="#050508" />
       </mesh>
 
-      {/* Platforms (the course) */}
-      {levelData.platforms.map((platform, i) => (
-        <Platform
-          key={`platform-${i}`}
-          position={platform.position}
-          size={platform.size}
-          rotation={platform.rotation}
-        />
+      {/* Floor segments */}
+      {levelData.floorSegments.map((seg, i) => (
+        <RigidBody key={`floor-${i}`} type="fixed" position={seg.position}>
+          <mesh receiveShadow>
+            <boxGeometry args={seg.size} />
+            <meshStandardMaterial
+              color="#1a1a2e"
+              metalness={0.3}
+              roughness={0.7}
+            />
+          </mesh>
+          {/* Glowing edge lines */}
+          <mesh position={[0, seg.size[1]/2 + 0.01, 0]}>
+            <boxGeometry args={[seg.size[0], 0.02, seg.size[2]]} />
+            <meshBasicMaterial color="#1FF2FF" transparent opacity={0.1} />
+          </mesh>
+        </RigidBody>
       ))}
 
-      {/* Walls (guardrails) */}
+      {/* Walls */}
       {levelData.walls.map((wall, i) => (
-        <RigidBody
-          key={`wall-${i}`}
-          type="fixed"
-          position={wall.position}
-          rotation={[0, wall.rotation || 0, 0]}
-        >
+        <RigidBody key={`wall-${i}`} type="fixed" position={wall.position}>
           <mesh>
             <boxGeometry args={wall.size} />
             <meshStandardMaterial
-              color={COLORS.PLATFORM_EDGE}
+              color="#1FF2FF"
               transparent
-              opacity={0.3}
-              emissive={COLORS.PLATFORM_EDGE}
-              emissiveIntensity={0.2}
+              opacity={0.15}
+              emissive="#1FF2FF"
+              emissiveIntensity={0.3}
             />
           </mesh>
         </RigidBody>
@@ -239,7 +191,7 @@ export function Level01Scene({ seed = 'default' }: Level01SceneProps) {
         />
       ))}
 
-      {/* Signal Shards */}
+      {/* Shards */}
       {levelData.shards.map((shard) => (
         <SignalShard
           key={shard.id}
@@ -251,8 +203,8 @@ export function Level01Scene({ seed = 'default' }: Level01SceneProps) {
       {/* Exit Gate */}
       <ExitGate position={levelData.exitGate.position} />
 
-      {/* Invisible death plane */}
-      <RigidBody type="fixed" colliders={false} position={[0, -10, -30]}>
+      {/* Death plane */}
+      <RigidBody type="fixed" colliders={false} position={[0, -10, -35]}>
         <CuboidCollider args={[100, 1, 100]} sensor />
       </RigidBody>
     </group>
