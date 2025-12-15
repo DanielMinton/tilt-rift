@@ -28,28 +28,34 @@ function generateCourse(): LevelData {
   const wallHeight = 1.2;
   const wallThickness = 0.5;
 
-  // ONE CONTINUOUS FLOOR - simple rectangle for now
-  // Main floor: 8 wide x 80 long
+  // ONE CONTINUOUS FLOOR - extends well past the exit gate
+  // Main floor: 8 wide x 100 long (from z=5 to z=-95)
   floorSegments.push({
-    position: [0, -0.25, -35],
-    size: [pathWidth, 0.5, 80],
+    position: [0, -0.25, -45],
+    size: [pathWidth, 0.5, 100],
   });
 
   // Left wall (full length)
   walls.push({
-    position: [-pathWidth/2 - wallThickness/2, wallHeight/2, -35],
-    size: [wallThickness, wallHeight, 80],
+    position: [-pathWidth/2 - wallThickness/2, wallHeight/2, -45],
+    size: [wallThickness, wallHeight, 100],
   });
 
   // Right wall (full length)
   walls.push({
-    position: [pathWidth/2 + wallThickness/2, wallHeight/2, -35],
-    size: [wallThickness, wallHeight, 80],
+    position: [pathWidth/2 + wallThickness/2, wallHeight/2, -45],
+    size: [wallThickness, wallHeight, 100],
   });
 
   // Back wall (at start)
   walls.push({
     position: [0, wallHeight/2, 6],
+    size: [pathWidth + wallThickness*2, wallHeight, wallThickness],
+  });
+
+  // End wall (behind exit gate)
+  walls.push({
+    position: [0, wallHeight/2, -90],
     size: [pathWidth + wallThickness*2, wallHeight, wallThickness],
   });
 
@@ -204,8 +210,8 @@ export function Level01Scene({ seed = 'default' }: Level01SceneProps) {
       <ExitGate position={levelData.exitGate.position} />
 
       {/* Death plane */}
-      <RigidBody type="fixed" colliders={false} position={[0, -10, -35]}>
-        <CuboidCollider args={[100, 1, 100]} sensor />
+      <RigidBody type="fixed" colliders={false} position={[0, -10, -45]}>
+        <CuboidCollider args={[100, 1, 150]} sensor />
       </RigidBody>
     </group>
   );
