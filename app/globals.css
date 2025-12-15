@@ -1,0 +1,195 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --void: #07060D;
+  --navy: #0B1020;
+  --panel: #0F172A;
+  --text-primary: #E6E6F0;
+  --text-muted: #9AA4BF;
+  --neon-cyan: #1FF2FF;
+  --neon-magenta: #FF3BF5;
+  --neon-gold: #FFD166;
+  --neon-green: #2DFF88;
+  --neon-red: #FF3B3B;
+  --glass: #BCEBFF;
+  --oil-slick: #2B1B3D;
+  --heat: #FF7A18;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Custom scrollbar for desktop panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-magenta);
+}
+
+/* Canvas container */
+.canvas-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* HUD overlay */
+.hud-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-overlay > * {
+  pointer-events: auto;
+}
+
+/* Panel styling */
+.panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(31, 242, 255, 0.2);
+  border-radius: 8px;
+}
+
+/* Neon text glow */
+.neon-glow {
+  text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+}
+
+.neon-glow-gold {
+  text-shadow: 0 0 10px var(--neon-gold), 0 0 20px var(--neon-gold), 0 0 30px var(--neon-gold);
+}
+
+/* Button base styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.14s ease-out;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.btn-primary {
+  background: var(--neon-cyan);
+  color: var(--void);
+}
+
+.btn-primary:hover {
+  background: #4ff5ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(31, 242, 255, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--neon-cyan);
+  border: 1px solid var(--neon-cyan);
+}
+
+.btn-secondary:hover {
+  background: rgba(31, 242, 255, 0.1);
+}
+
+/* Stability bar */
+.stability-bar {
+  height: 8px;
+  background: var(--navy);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stability-bar-fill {
+  height: 100%;
+  transition: width 0.1s ease-out, background-color 0.3s ease;
+}
+
+/* Combo meter animation */
+@keyframes combo-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.combo-active {
+  animation: combo-pulse 0.3s ease-out;
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--navy);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+.high-contrast {
+  --panel: #000000;
+  --text-primary: #FFFFFF;
+  --text-muted: #CCCCCC;
+  --neon-cyan: #00FFFF;
+  --neon-gold: #FFFF00;
+}

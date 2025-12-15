@@ -19,7 +19,13 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/engine/*": ["./engine/*"],
+      "@/game/*": ["./game/*"],
+      "@/experiences/*": ["./experiences/*"],
+      "@/world/*": ["./world/*"]
     }
   },
   "include": [
