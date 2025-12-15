@@ -7,20 +7,19 @@ import { Group, Vector3 } from 'three';
 import { COLORS } from '../../shared/constants';
 import { useGameStore } from '@/game/store/useGameStore';
 import { triggerVictoryBurst } from '@/engine/vfx/VictoryBurst';
+import { playVictory } from '@/engine/audio/procedural';
 
 interface ExitGateProps {
   position: [number, number, number];
-  requiredShards?: number;
 }
 
-export function ExitGate({ position, requiredShards }: ExitGateProps) {
+export function ExitGate({ position }: ExitGateProps) {
   const groupRef = useRef<Group>(null);
-  const shardsCollected = useGameStore((s) => s.shardsCollected);
-  const totalShards = useGameStore((s) => s.totalShards);
   const triggerVictory = useGameStore((s) => s.triggerVictory);
+  const phase = useGameStore((s) => s.phase);
 
-  const minShards = requiredShards ?? Math.ceil(totalShards * 0.8);
-  const isActive = shardsCollected >= minShards;
+  // Gate is always active - shards are bonus points only
+  const isActive = true;
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -34,9 +33,11 @@ export function ExitGate({ position, requiredShards }: ExitGateProps) {
   });
 
   const handleEnter = () => {
-    if (!isActive) return;
+    // Only trigger if currently playing
+    if (phase !== 'playing') return;
 
     triggerVictoryBurst({ x: position[0], y: position[1], z: position[2] });
+    playVictory();
     triggerVictory();
   };
 
@@ -105,19 +106,6 @@ export function ExitGate({ position, requiredShards }: ExitGateProps) {
         )}
       </group>
 
-      {/* Progress indicator */}
-      {!isActive && (
-        <group position={[0, -1.5, 0]}>
-          <mesh>
-            <planeGeometry args={[2, 0.3]} />
-            <meshBasicMaterial color={COLORS.CHECKPOINT_INACTIVE} transparent opacity={0.5} />
-          </mesh>
-          <mesh position={[-1 + (shardsCollected / minShards), 0, 0.01]} scale={[(shardsCollected / minShards) * 2, 1, 1]}>
-            <planeGeometry args={[1, 0.25]} />
-            <meshBasicMaterial color={COLORS.SHARD} transparent opacity={0.8} />
-          </mesh>
-        </group>
-      )}
     </RigidBody>
   );
 }

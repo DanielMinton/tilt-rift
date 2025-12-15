@@ -22,6 +22,7 @@ export function PlayerOrb({ inputMode }: PlayerOrbProps) {
   const phase = useGameStore((s) => s.phase);
   const setPlayerPosition = useGameStore((s) => s.setPlayerPosition);
   const takeDamage = useGameStore((s) => s.takeDamage);
+  const updateCourseProgress = useGameStore((s) => s.updateCourseProgress);
 
   const forceMultiplier = inputMode === 'mobile' ? 15 : 20;
 
@@ -52,6 +53,10 @@ export function PlayerOrb({ inputMode }: PlayerOrbProps) {
     // Update player position in store
     const pos = rigidBodyRef.current.translation();
     setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z });
+
+    // Update course progress (start Z is ~4, goes negative toward goal)
+    const startZ = spawnPoint?.z ?? 4;
+    updateCourseProgress(pos.z, startZ);
 
     // Check for fall death
     if (pos.y < -5) {

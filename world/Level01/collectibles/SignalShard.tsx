@@ -7,7 +7,7 @@ import { Group, MathUtils } from 'three';
 import { COLORS } from '../../shared/constants';
 import { useGameStore } from '@/game/store/useGameStore';
 import { triggerPickupSwirl } from '@/engine/vfx/PickupSwirl';
-import { sfx } from '@/engine/audio/sfx';
+import { playShardCollect } from '@/engine/audio/procedural';
 
 interface SignalShardProps {
   id: string;
@@ -49,7 +49,7 @@ export function SignalShard({ id, position, value = 100 }: SignalShardProps) {
     triggerPickupSwirl({ x: position[0], y: position[1], z: position[2] });
 
     // Play sound
-    sfx.play('shardCollect');
+    playShardCollect();
   };
 
   if (isCollected) return null;

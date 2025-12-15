@@ -24,16 +24,18 @@ const RANK_LABELS: Record<Rank, string> = {
 };
 
 export function ResultsOverlay() {
-  const gameState = useGameStore((state) => state.gameState);
+  const phase = useGameStore((state) => state.phase);
   const run = useGameStore((state) => state.run);
   const seed = useGameStore((state) => state.seed);
   const deviceMode = useGameStore((state) => state.deviceMode);
-  const setGameState = useGameStore((state) => state.setGameState);
+  const shardsCollected = useGameStore((state) => state.shardsCollected);
+  const totalShards = useGameStore((state) => state.totalShards);
   const resetGame = useGameStore((state) => state.resetGame);
+  const setPhase = useGameStore((state) => state.setPhase);
   const hideResultsOverlay = useGameStore((state) => state.hideResultsOverlay);
   const showCrossPlatformPrompt = useGameStore((state) => state.showCrossPlatformPrompt);
 
-  const isVictory = gameState === 'WON';
+  const isVictory = phase === 'victory';
 
   const finalScore = useMemo(() => {
     return calculateFinalScore({
@@ -58,7 +60,7 @@ export function ResultsOverlay() {
   const handleRetry = () => {
     hideResultsOverlay();
     resetGame();
-    setGameState('MENU');
+    setPhase('menu');
   };
 
   const handleShare = async () => {
@@ -114,7 +116,7 @@ export function ResultsOverlay() {
         >
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Shards Collected</span>
-            <span className="font-mono">{run.shardsCollected}/{run.totalShards}</span>
+            <span className="font-mono">{shardsCollected}/{totalShards}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-text-muted">Time Bonus</span>

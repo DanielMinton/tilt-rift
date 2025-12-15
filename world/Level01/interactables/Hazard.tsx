@@ -4,8 +4,9 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { Mesh, MeshBasicMaterial } from 'three';
-import { COLLISION_GROUPS, COLORS } from '../../shared/constants';
+import { COLORS } from '../../shared/constants';
 import { useGameStore } from '@/game/store/useGameStore';
+import { playHazardHit } from '@/engine/audio/procedural';
 
 interface HazardProps {
   position: [number, number, number];
@@ -27,6 +28,7 @@ export function Hazard({ position, size, damage = 1 }: HazardProps) {
 
   const handleCollision = () => {
     takeDamage(damage);
+    playHazardHit();
   };
 
   return (

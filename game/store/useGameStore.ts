@@ -48,6 +48,12 @@ export interface GameStoreState extends RunSlice, SettingsSlice, InputSlice, UIS
   playerPosition: Vector3Data;
   setPlayerPosition: (position: Vector3Data) => void;
 
+  // Course progress
+  courseLength: number;
+  courseProgress: number;
+  setCourseLength: (length: number) => void;
+  updateCourseProgress: (playerZ: number, startZ: number) => void;
+
   // Shards
   shardsCollected: number;
   totalShards: number;
@@ -161,6 +167,16 @@ export const useGameStore = create<GameStoreState>()(
           // Player position
           playerPosition: { x: 0, y: 0, z: 0 },
           setPlayerPosition: (playerPosition: Vector3Data) => set({ playerPosition }),
+
+          // Course progress
+          courseLength: 60,
+          courseProgress: 0,
+          setCourseLength: (courseLength: number) => set({ courseLength }),
+          updateCourseProgress: (playerZ: number, startZ: number) => {
+            const state = get();
+            const progress = Math.max(0, Math.min(1, (startZ - playerZ) / state.courseLength));
+            set({ courseProgress: progress });
+          },
 
           // Shards
           shardsCollected: 0,
